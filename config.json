@@ -1,0 +1,15 @@
+{
+    "baseUrl": "https://www.smartplay.lcsd.gov.hk/rest/facility-catalog/api/v1/",
+    "endpoint": "publ/facilities",
+    "params": [
+        "faCode=BADC"
+    ],
+    "dateKey": "playDate",
+    "headers": {
+        "Accept": "application/json",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "zh-hk",
+        "channel": "INTERNET",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+    }
+}
