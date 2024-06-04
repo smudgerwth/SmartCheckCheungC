@@ -35,6 +35,7 @@ MAX_LENGTH=4096
 
 def send_result(json_data):
     msg = ''
+    json_data = [x for x in json_data if x['peakHour'] == True]
     for data in json_data:
         data['venueName'] = data['venueName'].replace('體育館','')
         day = day_chinese[pd.to_datetime(data['ssnStartDate']).strftime('%A')]
