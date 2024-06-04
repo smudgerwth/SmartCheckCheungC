@@ -3,3 +3,4 @@ data.json
 data_old.json
 changed.json
 debug.log
+__pycache__
