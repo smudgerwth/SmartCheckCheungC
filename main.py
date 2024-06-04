@@ -99,10 +99,12 @@ if os.path.exists('data.json'):
     
 with open('data.json', 'w') as f:
     json.dump(data_json, f, ensure_ascii=False, indent=4)
+    old_json = []
     if os.path.exists('data_old.json'):
-        changed_record = get_changed_records(json.load(open('data_old.json')), data_json)
-        with open('changed.json', 'w') as f:
-            json.dump(changed_record, f, ensure_ascii=False, indent=4)
-        sendTgMsg.send_result(changed_record)
+        old_json = json.load(open('data_old.json'))
+    changed_record = get_changed_records(old_json, data_json)
+    with open('changed.json', 'w') as f:
+        json.dump(changed_record, f, ensure_ascii=False, indent=4)
+    sendTgMsg.send_result(changed_record)
 
 DBG("end")

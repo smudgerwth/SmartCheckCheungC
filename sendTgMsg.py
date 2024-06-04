@@ -16,6 +16,9 @@ CHAT_ID_DEBUG = '166389413'
 MSG_DELAY = 0
 
 column_name = ["Date","Day","Holiday","Time","Venue","Area"]
+day_chinese = {'Monday': '一', 'Tuesday': '二', 'Wednesday': '三', 'Thursday': '四', 'Friday': '五', 'Saturday': '六', 'Sunday': '日'}
+# day = pd.to_datetime('2024-06-04').strftime('%A')
+# print(day_chinese[pd.to_datetime('2024-06-04').strftime('%A')])
 
 def path(fn):
     return(os.path.join(os.path.dirname(os.path.abspath(__file__)), fn))
@@ -33,7 +36,11 @@ MAX_LENGTH=4096
 def send_result(json_data):
     msg = ''
     for data in json_data:
-        msg += data['venueName'] + ' ' + data['ssnStartDate'] + ' ' + data['ssnStartTime'] + ' ' + str(data['sessionCount']) + '\n'
+        data['venueName'] = data['venueName'].replace('體育館','')
+        day = day_chinese[pd.to_datetime(data['ssnStartDate']).strftime('%A')]
+        data['ssnStartDate'] = data['ssnStartDate'][5:]
+        data['ssnStartTime'] = data['ssnStartTime'][:5]
+        msg += data['ssnStartDate'] + ', ' + day + ', ' + data['venueName'] + ', ' + data['ssnStartTime'] + ', ' + str(data['sessionCount']) + '\n'
     if len(msg) > MAX_LENGTH:
         parts = []
         current_part = ""
@@ -48,7 +55,7 @@ def send_result(json_data):
     else:
         parts = [msg]
     for part in parts:
-        print(part)
+        # print(part)
         sendTgMsg(part, CHAT_ID_DEBUG)
     # msg = ''
     # json_data = [x for x in json_data if x['peakHour'] == True]
