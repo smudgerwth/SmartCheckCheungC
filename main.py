@@ -107,4 +107,4 @@ with open('data.json', 'w') as f:
         json.dump(changed_record, f, ensure_ascii=False, indent=4)
     sendTgMsg.send_result(changed_record)
 
-DBG("end")
+DBG(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
