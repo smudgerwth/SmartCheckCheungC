@@ -56,7 +56,7 @@ def send_result(json_data):
         parts = [msg]
     for part in parts:
         # print(part)
-        sendTgMsg(part, CHAT_ID_DEBUG)
+        sendTgMsg(part, CHAT_ID_HOLI)
     # msg = ''
     # json_data = [x for x in json_data if x['peakHour'] == True]
     # for data in json_data:
