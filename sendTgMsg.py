@@ -28,13 +28,28 @@ def sendTgMsg(msg,chat_id):
                   '/sendMessage?chat_id='+chat_id+'&text='+msg)
     time.sleep(MSG_DELAY)
 
+MAX_LENGTH=4096
 
 def send_result(json_data):
     msg = ''
     for data in json_data:
         msg += data['venueName'] + ' ' + data['ssnStartDate'] + ' ' + data['ssnStartTime'] + ' ' + str(data['sessionCount']) + '\n'
-    print(msg)
-    sendTgMsg(msg, CHAT_ID_DEBUG)
+    if len(msg) > MAX_LENGTH:
+        parts = []
+        current_part = ""
+        lines = msg.splitlines()
+        for line in lines:
+            if len(current_part) + len(line) + 1 > MAX_LENGTH:
+                parts.append(current_part)
+                current_part = ""
+            current_part += line + "\n"
+        if current_part:
+            parts.append(current_part)
+    else:
+        parts = [msg]
+    for part in parts:
+        print(part)
+        sendTgMsg(part, CHAT_ID_DEBUG)
     # msg = ''
     # json_data = [x for x in json_data if x['peakHour'] == True]
     # for data in json_data:

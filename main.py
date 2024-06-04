@@ -74,8 +74,9 @@ def get_changed_records(old_json, new_json):
             ):
                 combination_exists = True
                 break
-        if not combination_exists or new_record["available"] is True and old_record["available"] is False:
-            changed_records.append(new_record)
+        if new_record["available"] is True:
+            if not combination_exists or old_record["available"] is False:
+                changed_records.append(new_record)
     return changed_records
 
 current_date = datetime.now().date().strftime("%Y-%m-%d")
@@ -102,5 +103,6 @@ with open('data.json', 'w') as f:
         changed_record = get_changed_records(json.load(open('data_old.json')), data_json)
         with open('changed.json', 'w') as f:
             json.dump(changed_record, f, ensure_ascii=False, indent=4)
+        sendTgMsg.send_result(changed_record)
 
-sendTgMsg.send_result(changed_record)
+DBG("end")
