@@ -35,7 +35,7 @@ MAX_LENGTH=4096
 
 def send_result(json_data):
     msg = ''
-    json_data = [x for x in json_data if x['peakHour'] == True]
+    json_data = [x for x in json_data if x['peakHour'] == True and (x['distCode'] == 'KT' or x['distCode'] == 'WTS' or x['distCode'] == 'SK')]
     for data in json_data:
         data['venueName'] = data['venueName'].replace('體育館','')
         day = day_chinese[pd.to_datetime(data['ssnStartDate']).strftime('%A')]
@@ -79,6 +79,6 @@ def send_result(json_data):
 
 
 # Send debug msg
-# sendTgMsg('ping',CHAT_ID_DEBUG)
+    sendTgMsg('ping',CHAT_ID_DEBUG)
 # import json
 # send_result(json.load(open('changed.json')))
