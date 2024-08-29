@@ -39,7 +39,7 @@ def run(playwright: Playwright) -> None:
     page1 = page1_info.value
     page1.set_default_timeout(60000)
     # page1.wait_for_load_state('networkidle')
-    time.sleep(45)
+    time.sleep(60)
     # page1.get_by_role("button", name="Facilities").click()
 
     cookies = context.cookies()
