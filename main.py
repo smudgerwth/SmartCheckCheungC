@@ -45,10 +45,11 @@ def run(playwright: Playwright) -> None:
     cookies = context.cookies()
     # print(cookies)
 
-    acw_cookie = next((cookie for cookie in cookies if cookie['name'] == 'acw_sc__v2'), None)
-    if acw_cookie:
+    acw_tc_cookie = next((cookie for cookie in cookies if cookie['name'] == 'acw_tc'), None)
+    acw_sc_cookie = next((cookie for cookie in cookies if cookie['name'] == 'acw_sc__v2'), None)
+    if acw_tc_cookie and acw_sc_cookie:
         # Save to JSON file
-        add_key_to_json('config.json', acw_cookie['name'], acw_cookie['value'], acw_cookie['expires'])
+        add_key_to_json('config.json', acw_sc_cookie['name'], acw_sc_cookie['value'], acw_tc_cookie['expires'])
 
     context.close()
     browser.close()
