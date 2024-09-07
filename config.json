@@ -1,8 +1,31 @@
 {
     "baseUrl": "https://www.smartplay.lcsd.gov.hk/rest/facility-catalog/api/v1/",
     "endpoint": "publ/facilities",
-    "params": [
-        "faCode=BADC"
+    "debugId": "166389413",
+    "facilityKey": "faCode",
+    "facilityList": [
+        {
+            "name": "Badminton Court Peak Hours",
+            "code": "BADC",
+            "chatId": "-563254817",
+            "distList": {
+                "include": [
+                    "KT",
+                    "WTS",
+                    "SK"
+                ]
+            }
+        },
+        {
+            "name": "Basketball Court Peak Hours",
+            "code": "BASC",
+            "chatId": "-697240120",
+            "distList": {
+                "exclude": [
+                    "IS"
+                ]
+            }
+        }
     ],
     "dateKey": "playDate",
     "headers": {
