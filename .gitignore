@@ -1,6 +1,10 @@
 token
-data.json
-data_old.json
-changed.json
+cookies.json
+data_BADC.json
+data_BASC.json
+data_old_BADC.json
+data_old_BASC.json
+diff_BADC.json
+diff_BASC.json
 debug.log
 __pycache__
