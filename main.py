@@ -42,7 +42,7 @@ def run(playwright: Playwright) -> None:
     # page1.get_by_role("button", name="Facilities").click()
 
     cookies = context.cookies()
-    # print(cookies)
+    DBG(cookies)
 
     acw_tc_cookie = next(
         (cookie for cookie in cookies if cookie['name'] == 'acw_tc'), None)
@@ -151,22 +151,22 @@ try:
         with open('config.json') as f:
             config = json.load(f)
             debug_id = config['debugId']
-            try:
-                with open('cookies.json') as f:
-                    cookies = json.load(f)
-                    if 'expires' not in cookies:
-                        DBG("No Cookie")
-                        get_cookies()
-                        continue
-                    expires = cookies['expires']
-                    if current_time + 60 > expires:
-                        DBG("Cookie expired")
-                        get_cookies()
-                        continue
-            except FileNotFoundError:
-                DBG("No Cookie file")
-                get_cookies()
-                continue
+            # try:
+            #     with open('cookies.json') as f:
+            #         cookies = json.load(f)
+            #         if 'expires' not in cookies:
+            #             DBG("No Cookie")
+            #             get_cookies()
+            #             continue
+            #         expires = cookies['expires']
+            #         if current_time + 60 > expires:
+            #             DBG("Cookie expired")
+            #             get_cookies()
+            #             continue
+            # except FileNotFoundError:
+            #     DBG("No Cookie file")
+            #     get_cookies()
+            #     continue
 
             baseUrl = config['baseUrl']
             endpoint = config['endpoint']
@@ -181,7 +181,7 @@ try:
                 url = f"{baseUrl}{endpoint}?{facility_key}={code}&{dateKey}="
                 DBG(name)
                 # DBG(url)
-                config["headers"]["Cookie"] = f"{cookies['Cookie']}"
+                # config["headers"]["Cookie"] = f"{cookies['Cookie']}"
                 headers = config["headers"]
                 # DBG(headers)
                 current_date = datetime.now().date().strftime("%Y-%m-%d")
