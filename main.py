@@ -2,10 +2,10 @@ import os
 import sys
 import requests
 import json
-from datetime import datetime
+from datetime import datetime, time as dt_time
 import sendTgMsg
 import re
-from playwright.sync_api import Playwright, sync_playwright, expect
+# from playwright.sync_api import Playwright, sync_playwright, expect
 import time
 
 debug_enabled = True
@@ -25,35 +25,35 @@ def add_key_to_json(file_path, name, value, expire_time) -> None:
         json.dump(data, f, indent=4)
 
 
-def run(playwright: Playwright) -> None:
-    browser = playwright.chromium.launch(headless=True)
-    context = browser.new_context()
-    page = context.new_page()
-    page.set_default_timeout(60000)
-    page.goto("https://www.smartplay.lcsd.gov.hk/website/en/index.html")
-    with page.expect_popup() as page1_info:
-        page.get_by_role("link", name="Login").click()
-    page1 = page1_info.value
-    page1.set_default_timeout(60000)
-    try:
-        page1.wait_for_load_state('networkidle')
-    except:
-        time.sleep(30)
-    # page1.get_by_role("button", name="Facilities").click()
+# def run(playwright: Playwright) -> None:
+#     browser = playwright.chromium.launch(headless=True)
+#     context = browser.new_context()
+#     page = context.new_page()
+#     page.set_default_timeout(60000)
+#     page.goto("https://www.smartplay.lcsd.gov.hk/website/en/index.html")
+#     with page.expect_popup() as page1_info:
+#         page.get_by_role("link", name="Login").click()
+#     page1 = page1_info.value
+#     page1.set_default_timeout(60000)
+#     try:
+#         page1.wait_for_load_state('networkidle')
+#     except:
+#         time.sleep(30)
+#     # page1.get_by_role("button", name="Facilities").click()
 
-    cookies = context.cookies()
-    DBG(cookies)
+#     cookies = context.cookies()
+#     DBG(cookies)
 
-    acw_tc_cookie = next(
-        (cookie for cookie in cookies if cookie['name'] == 'acw_tc'), None)
-    acw_sc_cookie = next(
-        (cookie for cookie in cookies if cookie['name'] == 'acw_sc__v2'), None)
-    if acw_tc_cookie and acw_sc_cookie:
-        add_key_to_json(
-            'cookies.json', acw_sc_cookie['name'], acw_sc_cookie['value'], acw_tc_cookie['expires'])
+#     acw_tc_cookie = next(
+#         (cookie for cookie in cookies if cookie['name'] == 'acw_tc'), None)
+#     acw_sc_cookie = next(
+#         (cookie for cookie in cookies if cookie['name'] == 'acw_sc__v2'), None)
+#     if acw_tc_cookie and acw_sc_cookie:
+#         add_key_to_json(
+#             'cookies.json', acw_sc_cookie['name'], acw_sc_cookie['value'], acw_tc_cookie['expires'])
 
-    context.close()
-    browser.close()
+#     context.close()
+#     browser.close()
 
 
 def get_cookies():
@@ -99,6 +99,8 @@ def parse_response_json(json_data, peak_only=True, dist_list=None):
                         available = session['available']
                         session_count = session['sessionCount']
                         peak_hour = session['peakHour']
+                        if datetime.strptime(start_time, "%H:%M:%S").time() <= dt_time(9,0,0):
+                            continue
                         if available is False:
                             continue
                         if peak_hour is False and peak_only:

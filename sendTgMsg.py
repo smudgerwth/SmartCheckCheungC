@@ -62,3 +62,6 @@ def send_result(json_data, chat_id):
     for part in parts:
         # print(part)
         sendTgMsg(part, chat_id)
+
+if __name__ == "__main__":
+    sendTgMsg("Hi", CHAT_ID_DEBUG)
