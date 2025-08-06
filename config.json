@@ -12,7 +12,8 @@
                 "include": [
                     "KT",
                     "WTS",
-                    "SK"
+                    "SK",
+                    "ST"
                 ]
             }
         },
