@@ -13,21 +13,22 @@ class CourtCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final favorites = ref.watch(favoritesProvider);
     final isFavorite = favorites.contains(court.venueId);
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
+        color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withOpacity(isLight ? 0.05 : 0.2),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
         border: Border.all(
-          color: Colors.white.withOpacity(0.05),
+          color: isLight ? Colors.black.withOpacity(0.05) : Colors.white.withOpacity(0.05),
           width: 1,
         ),
       ),
@@ -47,36 +48,15 @@ class CourtCard extends ConsumerWidget {
                         court.venueName,
                         style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           fontSize: 18,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        court.fatName,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.white60,
                         ),
                       ),
                     ],
                   ),
                 ),
-                if (court.hasPeakHour)
-                  Container(
-                    margin: const EdgeInsets.only(right: 8),
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Text(
-                      '🔥 Peak',
-                      style: TextStyle(color: Colors.orange, fontSize: 10),
-                    ),
-                  ),
                 IconButton(
                   icon: Icon(
-                    isFavorite ? Icons.star_rounded : Icons.star_outline_rounded,
-                    color: isFavorite ? Colors.amber : Colors.white24,
+                    isFavorite ? Icons.favorite : Icons.favorite_outline,
+                    color: isFavorite ? Colors.red : (isLight ? Colors.black12 : Colors.white24),
                   ),
                   onPressed: () => ref.read(favoritesProvider.notifier).toggleFavorite(court.venueId),
                   padding: EdgeInsets.zero,
@@ -89,7 +69,7 @@ class CourtCard extends ConsumerWidget {
               children: [
                 const Icon(Icons.location_on, color: AppTheme.primaryColor, size: 14),
                 const SizedBox(width: 4),
-                Text(court.distName, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 13)),
+                Text(court.distName, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 13, color: isLight ? Colors.black54 : null)),
               ],
             ),
             const SizedBox(height: 16),
@@ -107,20 +87,33 @@ class CourtCard extends ConsumerWidget {
   Widget _buildTimeChip(BuildContext context, CourtSession session) {
     final startTime = session.ssnStartTime.substring(0, 5);
     final isAvailable = session.available;
-    final isPeak = session.peakHour;
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
     Color chipColor;
     Color textColor;
     Color borderColor;
 
     if (!isAvailable) {
-      chipColor = Colors.white.withOpacity(0.02);
-      textColor = Colors.white24;
-      borderColor = Colors.white10;
+      chipColor = isLight ? Colors.black.withOpacity(0.02) : Colors.white.withOpacity(0.02);
+      textColor = isLight ? Colors.black12 : Colors.white24;
+      borderColor = isLight ? Colors.black.withOpacity(0.05) : Colors.white10;
     } else {
-      chipColor = Colors.green.withOpacity(0.15);
-      textColor = Colors.greenAccent;
-      borderColor = Colors.green.withOpacity(0.4);
+      final count = session.sessionCount;
+      Color baseColor;
+      
+      if (count <= 1) {
+        baseColor = isLight ? Colors.red.shade700 : Colors.redAccent;
+      } else if (count <= 2) {
+        baseColor = isLight ? Colors.orange.shade700 : Colors.orangeAccent;
+      } else if (count <= 3) {
+        baseColor = isLight ? Colors.amber.shade700 : Colors.amberAccent;
+      } else {
+        baseColor = isLight ? Colors.green.shade700 : Colors.greenAccent;
+      }
+
+      chipColor = baseColor.withOpacity(isLight ? 0.05 : 0.15);
+      textColor = baseColor;
+      borderColor = baseColor.withOpacity(isLight ? 0.2 : 0.4);
     }
 
     return Stack(
@@ -148,22 +141,14 @@ class CourtCard extends ConsumerWidget {
               Text(
                 '(${session.sessionCount})',
                 style: TextStyle(
-                  color: isAvailable ? textColor.withOpacity(0.5) : Colors.white10,
+                  color: isAvailable ? textColor.withOpacity(0.7) : textColor,
                   fontSize: 10,
+                  fontWeight: isAvailable ? FontWeight.bold : FontWeight.normal,
                 ),
               ),
             ],
           ),
         ),
-        if (isPeak)
-          const Positioned(
-            top: -8,
-            right: -6,
-            child: Text(
-              '🔥',
-              style: TextStyle(fontSize: 12),
-            ),
-          ),
       ],
     );
   }

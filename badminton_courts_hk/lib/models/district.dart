@@ -4,6 +4,7 @@ class District {
   final String name;
   final String enName;
   final String tcName;
+  final String scName;
   final String? groupCode;
 
   District({
@@ -12,6 +13,7 @@ class District {
     required this.name,
     required this.enName,
     required this.tcName,
+    required this.scName,
     this.groupCode,
   });
 
@@ -22,6 +24,7 @@ class District {
       name: json['name']?.toString() ?? '',
       enName: json['enName']?.toString() ?? '',
       tcName: json['tcName']?.toString() ?? '',
+      scName: json['scName']?.toString() ?? '',
       groupCode: groupCode,
     );
   }

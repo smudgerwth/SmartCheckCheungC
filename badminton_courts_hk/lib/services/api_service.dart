@@ -7,7 +7,6 @@ class ApiService {
     baseUrl: 'https://www.smartplay.lcsd.gov.hk/rest/facility-catalog/api/v1/',
     headers: {
       'Accept': 'application/json',
-      'Accept-Language': 'zh-hk',
       'channel': 'INTERNET',
       'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
     },
@@ -19,6 +18,12 @@ class ApiService {
       responseBody: false,
       error: true,
     ));
+
+  void setLocale(String locale) {
+    if (['en', 'zh-hk', 'zh-cn'].contains(locale.toLowerCase())) {
+      _dio.options.headers['Accept-Language'] = locale;
+    }
+  }
 
   Future<List<CourtSession>> fetchSessions(String facilityCode, String date) async {
     try {
@@ -57,7 +62,6 @@ class ApiService {
                     'ssnStartDate': session['ssnStartDate'],
                     'available': session['available'],
                     'sessionCount': session['sessionCount'],
-                    'peakHour': session['peakHour'],
                   });
                 }
               }

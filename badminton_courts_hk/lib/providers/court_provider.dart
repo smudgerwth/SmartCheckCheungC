@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/court_session.dart';
@@ -13,12 +14,19 @@ final selectedDateProvider = StateProvider<String>((ref) {
   return "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
 });
 
-final selectedRegionsProvider = StateProvider<List<String>>((ref) => ['HK']);
+final selectedRegionsProvider = StateProvider<List<String>>((ref) => []);
 final selectedDistrictsProvider = StateProvider<List<String>>((ref) => []);
 
 // New Filter Providers
 final searchQueryProvider = StateProvider<String>((ref) => '');
-final showOnlyAvailableProvider = StateProvider<bool>((ref) => false);
+
+final showOnlyAvailableProvider = StateNotifierProvider<FilterNotifier, bool>((ref) {
+  return FilterNotifier('show_only_available');
+});
+
+final showOnlyFavoritesProvider = StateNotifierProvider<FilterNotifier, bool>((ref) {
+  return FilterNotifier('show_only_favorites');
+});
 
 enum TimeFilter { all, morning, afternoon, evening }
 final timeFilterProvider = StateProvider<TimeFilter>((ref) => TimeFilter.all);
@@ -56,16 +64,123 @@ class FavoritesNotifier extends StateNotifier<Set<String>> {
   }
 }
 
+class FilterNotifier extends StateNotifier<bool> {
+  final String _key;
+  FilterNotifier(this._key) : super(false) {
+    _loadState();
+  }
+
+  Future<void> _loadState() async {
+    final prefs = await SharedPreferences.getInstance();
+    state = prefs.getBool(_key) ?? false;
+  }
+
+  Future<void> toggle() async {
+    state = !state;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_key, state);
+  }
+
+  Future<void> set(bool value) async {
+    state = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_key, state);
+  }
+}
+
 final districtsProvider = FutureProvider<List<Region>>((ref) async {
   final apiService = ref.watch(apiServiceProvider);
+  // Ensure we refetch when locale changes, although fetchDistricts might be static data, 
+  // keeping it simple. Actually fetchDistricts returns ALL names, so we just need to redisplay.
+  // But if we want to change header, we need to make sure ApiService has correct header.
+  final locale = ref.watch(localeProvider);
+  apiService.setLocale(locale);
   return apiService.fetchDistricts();
 });
+
+// Locale Provider
+final localeProvider = StateNotifierProvider<LocaleNotifier, String>((ref) {
+  return LocaleNotifier();
+});
+
+class LocaleNotifier extends StateNotifier<String> {
+  LocaleNotifier() : super('en') {
+    _initLocale();
+  }
+
+  static const _key = 'app_locale';
+
+  Future<void> _initLocale() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedLocale = prefs.getString(_key);
+    
+    if (savedLocale != null) {
+      state = savedLocale;
+    } else {
+      // Use system locale as default
+      final systemLocale = WidgetsBinding.instance.platformDispatcher.locale;
+      final languageCode = systemLocale.languageCode.toLowerCase();
+      final scriptCode = systemLocale.scriptCode?.toLowerCase();
+      final countryCode = systemLocale.countryCode?.toLowerCase();
+
+      if (languageCode == 'zh') {
+        if (scriptCode == 'hans' || countryCode == 'cn') {
+          state = 'zh-cn';
+        } else {
+          state = 'zh-hk';
+        }
+      } else {
+        state = 'en';
+      }
+    }
+  }
+
+  Future<void> setLocale(String locale) async {
+    state = locale;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_key, locale);
+  }
+}
+
+// Theme Mode Provider
+final themeModeProvider = StateNotifierProvider<ThemeNotifier, ThemeMode>((ref) {
+  return ThemeNotifier();
+});
+
+class ThemeNotifier extends StateNotifier<ThemeMode> {
+  ThemeNotifier() : super(ThemeMode.dark) {
+    _loadTheme();
+  }
+
+  static const _key = 'app_theme_mode';
+
+  Future<void> _loadTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    final themeIndex = prefs.getInt(_key);
+    if (themeIndex != null) {
+      state = ThemeMode.values[themeIndex];
+    }
+  }
+
+  Future<void> setThemeMode(ThemeMode mode) async {
+    state = mode;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_key, mode.index);
+  }
+
+  Future<void> toggleTheme() async {
+    final newMode = state == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    await setThemeMode(newMode);
+  }
+}
 
 final sessionsProvider = FutureProvider<List<CourtSession>>((ref) async {
   final apiService = ref.watch(apiServiceProvider);
   final facilityCode = ref.watch(facilityCodeProvider);
   final date = ref.watch(selectedDateProvider);
+  final locale = ref.watch(localeProvider);
   
+  apiService.setLocale(locale);
   return apiService.fetchSessions(facilityCode, date);
 });
 
@@ -75,6 +190,7 @@ final groupedSessionsProvider = FutureProvider<List<GroupedCourt>>((ref) async {
   ref.watch(selectedDistrictsProvider);
   ref.watch(searchQueryProvider);
   ref.watch(showOnlyAvailableProvider);
+  ref.watch(showOnlyFavoritesProvider);
   ref.watch(timeFilterProvider);
   ref.watch(favoritesProvider);
   
@@ -88,6 +204,7 @@ List<GroupedCourt> _processSessions(List<CourtSession> sessions, Ref ref) {
   
   final searchQuery = ref.read(searchQueryProvider).toLowerCase();
   final showOnlyAvailable = ref.read(showOnlyAvailableProvider);
+  final showOnlyFavorites = ref.read(showOnlyFavoritesProvider);
   final timeFilter = ref.read(timeFilterProvider);
   final favorites = ref.read(favoritesProvider);
 
@@ -129,6 +246,11 @@ List<GroupedCourt> _processSessions(List<CourtSession> sessions, Ref ref) {
 
     // 4. Filter by Availability
     if (showOnlyAvailable && !session.available) {
+      continue;
+    }
+    
+    // 5. Filter by Favorites
+    if (showOnlyFavorites && !favorites.contains(session.venueId)) {
       continue;
     }
 

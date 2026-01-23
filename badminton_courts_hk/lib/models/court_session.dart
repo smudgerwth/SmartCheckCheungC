@@ -9,7 +9,6 @@ class CourtSession {
   final String ssnStartDate;
   final bool available;
   final int sessionCount;
-  final bool peakHour;
 
   CourtSession({
     required this.distName,
@@ -22,7 +21,6 @@ class CourtSession {
     required this.ssnStartDate,
     required this.available,
     required this.sessionCount,
-    required this.peakHour,
   });
 
   factory CourtSession.fromJson(Map<String, dynamic> json) {
@@ -40,9 +38,6 @@ class CourtSession {
           : (json['available']?.toString().toLowerCase() == 'true'),
       sessionCount: int.tryParse(json['sessionCount']?.toString() ?? '') ?? 
           (json['sessionCount'] is int ? json['sessionCount'] : 0),
-      peakHour: json['peakHour'] is bool
-          ? json['peakHour']
-          : (json['peakHour']?.toString().toLowerCase() == 'true'),
     );
   }
 
@@ -58,7 +53,6 @@ class CourtSession {
       'ssnStartDate': ssnStartDate,
       'available': available,
       'sessionCount': sessionCount,
-      'peakHour': peakHour,
     };
   }
 }
@@ -80,6 +74,5 @@ class GroupedCourt {
     required this.sessions,
   });
 
-  bool get hasPeakHour => sessions.any((s) => s.peakHour);
   int get totalAvailableCourts => sessions.fold(0, (sum, s) => sum + s.sessionCount);
 }
