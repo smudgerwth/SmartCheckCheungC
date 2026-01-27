@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
 import '../providers/court_provider.dart';
@@ -10,6 +11,13 @@ import '../l10n/app_strings.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
+
+  Future<void> _launchURL(String urlString) async {
+    final Uri url = Uri.parse(urlString);
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      throw Exception('Could not launch $url');
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -100,13 +108,45 @@ class HomeScreen extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(AppStrings.get(locale, 'appTitle'), style: Theme.of(context).textTheme.headlineLarge),
-              const SizedBox(height: 8),
-              Text(AppStrings.get(locale, 'availableCourts'), style: Theme.of(context).textTheme.bodyLarge),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        AppStrings.get(locale, 'appTitle'), 
+                        style: Theme.of(context).textTheme.headlineLarge,
+                        overflow: TextOverflow.visible,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () => _launchURL(AppStrings.get(locale, 'smartPlayUrl')),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          AppStrings.get(locale, 'smartPlayLabel'),
+                          style: const TextStyle(
+                            color: AppTheme.primaryColor,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(AppStrings.get(locale, 'availableCourts'), style: Theme.of(context).textTheme.bodyLarge),
+              ],
+            ),
           ),
           Row(
             children: [
@@ -317,12 +357,9 @@ class HomeScreen extends ConsumerWidget {
                     current.add(region.code);
                   } else {
                     current.remove(region.code);
-                    // Also clear districts from this region
-                    final selectedDistricts = ref.read(selectedDistrictsProvider);
-                    final regionDistCodes = region.districts.map((d) => d.code).toSet();
-                    ref.read(selectedDistrictsProvider.notifier).state = 
-                        selectedDistricts.where((d) => !regionDistCodes.contains(d)).toList();
                   }
+                  // Reset district selection whenever region selection changes
+                  ref.read(selectedDistrictsProvider.notifier).state = [];
                   ref.read(selectedRegionsProvider.notifier).state = current;
                 },
                 selectedColor: AppTheme.secondaryColor,
