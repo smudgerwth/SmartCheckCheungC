@@ -36,7 +36,7 @@ class AppStrings {
       'updating': '更新中...',
       'errorLoading': '載入資料時發生錯誤',
       'smartPlayUrl': 'https://www.smartplay.lcsd.gov.hk/home?lang=tc',
-      'smartPlayLabel': 'SmartPlay',
+      'smartPlayLabel': 'SmartPLAY',
     },
     'zh-cn': {
       'appTitle': '香港羽毛球场',
@@ -55,7 +55,7 @@ class AppStrings {
       'updating': '更新中...',
       'errorLoading': '加载数据时发生错误',
       'smartPlayUrl': 'https://www.smartplay.lcsd.gov.hk/home?lang=sc',
-      'smartPlayLabel': 'SmartPlay',
+      'smartPlayLabel': 'SmartPLAY',
     },
   };
 

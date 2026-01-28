@@ -8,6 +8,7 @@ import '../models/district.dart';
 import '../widgets/court_card.dart';
 import '../theme/app_theme.dart';
 import '../l10n/app_strings.dart';
+import '../widgets/ad_banner.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -98,6 +99,7 @@ class HomeScreen extends ConsumerWidget {
           ),
         ),
       ),
+      bottomNavigationBar: const AdBanner(),
     );
   }
 
