@@ -114,15 +114,17 @@ class HomeScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(
+                  AppStrings.get(locale, 'appTitle'), 
+                  style: Theme.of(context).textTheme.headlineLarge,
+                ),
+                const SizedBox(height: 8),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Flexible(
-                      child: Text(
-                        AppStrings.get(locale, 'appTitle'), 
-                        style: Theme.of(context).textTheme.headlineLarge,
-                        overflow: TextOverflow.visible,
-                      ),
+                    Text(
+                      AppStrings.get(locale, 'bookNow'), 
+                      style: Theme.of(context).textTheme.bodyLarge,
                     ),
                     const SizedBox(width: 8),
                     GestureDetector(
@@ -137,7 +139,7 @@ class HomeScreen extends ConsumerWidget {
                           AppStrings.get(locale, 'smartPlayLabel'),
                           style: const TextStyle(
                             color: AppTheme.primaryColor,
-                            fontSize: 12,
+                            fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -145,8 +147,6 @@ class HomeScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                Text(AppStrings.get(locale, 'availableCourts'), style: Theme.of(context).textTheme.bodyLarge),
               ],
             ),
           ),
@@ -229,7 +229,13 @@ class HomeScreen extends ConsumerWidget {
         children: [
           _facilityButton(context, ref, AppStrings.get(locale, 'badminton'), 'BADC', currentCode == 'BADC'),
           const SizedBox(width: 12),
+          _facilityButton(context, ref, AppStrings.get(locale, 'pickleball'), 'PBC1', currentCode == 'PBC1'),
+          const SizedBox(width: 12),
           _facilityButton(context, ref, AppStrings.get(locale, 'basketball'), 'BASC', currentCode == 'BASC'),
+          const SizedBox(width: 12),
+          _facilityButton(context, ref, AppStrings.get(locale, 'tennis'), 'TENC', currentCode == 'TENC'),
+          const SizedBox(width: 12),
+          _facilityButton(context, ref, AppStrings.get(locale, 'volleyball'), 'VOLC', currentCode == 'VOLC'),
         ],
       ),
     );

@@ -3,11 +3,36 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/court_session.dart';
 import '../providers/court_provider.dart';
 import '../theme/app_theme.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 
 class CourtCard extends ConsumerWidget {
   final GroupedCourt court;
 
   const CourtCard({super.key, required this.court});
+
+  Future<void> _openMap(String venueName, String districtName) async {
+    final query = Uri.encodeComponent('$venueName, $districtName, Hong Kong');
+    String urlString;
+
+    if (kIsWeb) {
+      urlString = 'https://www.google.com/maps/search/?api=1&query=$query';
+    } else if (Platform.isAndroid) {
+      urlString = 'geo:0,0?q=$query'; // Android Native (Google Maps)
+    } else if (Platform.isIOS) {
+      urlString = 'maps://?q=$query'; // iOS Native (Apple Maps)
+    } else {
+      urlString = 'https://www.google.com/maps/search/?api=1&query=$query';
+    }
+
+    final url = Uri.parse(urlString);
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      // Fallback to web if native scheme fails
+      final webUrl = Uri.parse('https://www.google.com/maps/search/?api=1&query=$query');
+      await launchUrl(webUrl, mode: LaunchMode.externalApplication);
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -65,12 +90,28 @@ class CourtCard extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 12),
-            Row(
-              children: [
-                const Icon(Icons.location_on, color: AppTheme.primaryColor, size: 14),
-                const SizedBox(width: 4),
-                Text(court.distName, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 13, color: isLight ? Colors.black54 : null)),
-              ],
+            InkWell(
+              onTap: () => _openMap(court.venueName, court.distName),
+              borderRadius: BorderRadius.circular(8),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.location_on, color: AppTheme.primaryColor, size: 14),
+                    const SizedBox(width: 4),
+                    Text(
+                      court.distName, 
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontSize: 13, 
+                        color: AppTheme.primaryColor,
+                        decoration: TextDecoration.underline,
+                        decorationColor: AppTheme.primaryColor.withOpacity(0.3),
+                      )
+                    ),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 16),
             Wrap(

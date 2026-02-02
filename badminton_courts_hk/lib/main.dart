@@ -6,7 +6,16 @@ import 'providers/court_provider.dart';
 
 import 'l10n/app_strings.dart';
 
-void main() {
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+
+import 'package:flutter/foundation.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  if (!kIsWeb) {
+    await MobileAds.instance.initialize();
+  }
+  
   runApp(
     const ProviderScope(
       child: MyApp(),
