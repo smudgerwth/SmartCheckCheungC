@@ -8,37 +8,29 @@ import '../models/district.dart';
 
 final apiServiceProvider = Provider((ref) => ApiService());
 
-final facilityCodeProvider = StateProvider<String>((ref) => 'BADC');
-final selectedDateProvider = StateProvider<String>((ref) {
-  final now = DateTime.now();
-  return "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
-});
+final facilityCodeProvider = NotifierProvider<FacilityNotifier, String>(FacilityNotifier.new);
+final selectedDateProvider = NotifierProvider<DateNotifier, String>(DateNotifier.new);
 
-final selectedRegionsProvider = StateProvider<List<String>>((ref) => []);
-final selectedDistrictsProvider = StateProvider<List<String>>((ref) => []);
+final selectedRegionsProvider = NotifierProvider<RegionsNotifier, List<String>>(RegionsNotifier.new);
+final selectedDistrictsProvider = NotifierProvider<DistrictsNotifier, List<String>>(DistrictsNotifier.new);
 
 // New Filter Providers
-final searchQueryProvider = StateProvider<String>((ref) => '');
+final searchQueryProvider = NotifierProvider<SearchQueryNotifier, String>(SearchQueryNotifier.new);
 
-final showOnlyAvailableProvider = StateNotifierProvider<FilterNotifier, bool>((ref) {
-  return FilterNotifier('show_only_available');
-});
-
-final showOnlyFavoritesProvider = StateNotifierProvider<FilterNotifier, bool>((ref) {
-  return FilterNotifier('show_only_favorites');
-});
+final showOnlyAvailableProvider = NotifierProvider<FilterNotifier, bool>(() => FilterNotifier('show_only_available'));
+final showOnlyFavoritesProvider = NotifierProvider<FilterNotifier, bool>(() => FilterNotifier('show_only_favorites'));
 
 enum TimeFilter { all, morning, afternoon, evening }
-final timeFilterProvider = StateProvider<TimeFilter>((ref) => TimeFilter.all);
+final timeFilterProvider = NotifierProvider<TimeFilterNotifier, TimeFilter>(TimeFilterNotifier.new);
 
 // Favorites Provider
-final favoritesProvider = StateNotifierProvider<FavoritesNotifier, Set<String>>((ref) {
-  return FavoritesNotifier();
-});
+final favoritesProvider = NotifierProvider<FavoritesNotifier, Set<String>>(FavoritesNotifier.new);
 
-class FavoritesNotifier extends StateNotifier<Set<String>> {
-  FavoritesNotifier() : super({}) {
+class FavoritesNotifier extends Notifier<Set<String>> {
+  @override
+  Set<String> build() {
     _loadFavorites();
+    return {};
   }
 
   static const _key = 'favorite_venues';
@@ -64,10 +56,14 @@ class FavoritesNotifier extends StateNotifier<Set<String>> {
   }
 }
 
-class FilterNotifier extends StateNotifier<bool> {
+class FilterNotifier extends Notifier<bool> {
   final String _key;
-  FilterNotifier(this._key) : super(false) {
+  FilterNotifier(this._key);
+
+  @override
+  bool build() {
     _loadState();
+    return false;
   }
 
   Future<void> _loadState() async {
@@ -88,24 +84,60 @@ class FilterNotifier extends StateNotifier<bool> {
   }
 }
 
+class FacilityNotifier extends Notifier<String> {
+  @override
+  String build() => 'BADC';
+  set state(String value) => super.state = value;
+}
+
+class DateNotifier extends Notifier<String> {
+  @override
+  String build() {
+    final now = DateTime.now();
+    return "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+  }
+  set state(String value) => super.state = value;
+}
+
+class RegionsNotifier extends Notifier<List<String>> {
+  @override
+  List<String> build() => [];
+  set state(List<String> value) => super.state = value;
+}
+
+class DistrictsNotifier extends Notifier<List<String>> {
+  @override
+  List<String> build() => [];
+  set state(List<String> value) => super.state = value;
+}
+
+class SearchQueryNotifier extends Notifier<String> {
+  @override
+  String build() => '';
+  set state(String value) => super.state = value;
+}
+
+class TimeFilterNotifier extends Notifier<TimeFilter> {
+  @override
+  TimeFilter build() => TimeFilter.all;
+  set state(TimeFilter value) => super.state = value;
+}
+
 final districtsProvider = FutureProvider<List<Region>>((ref) async {
   final apiService = ref.watch(apiServiceProvider);
-  // Ensure we refetch when locale changes, although fetchDistricts might be static data, 
-  // keeping it simple. Actually fetchDistricts returns ALL names, so we just need to redisplay.
-  // But if we want to change header, we need to make sure ApiService has correct header.
   final locale = ref.watch(localeProvider);
   apiService.setLocale(locale);
   return apiService.fetchDistricts();
 });
 
 // Locale Provider
-final localeProvider = StateNotifierProvider<LocaleNotifier, String>((ref) {
-  return LocaleNotifier();
-});
+final localeProvider = NotifierProvider<LocaleNotifier, String>(LocaleNotifier.new);
 
-class LocaleNotifier extends StateNotifier<String> {
-  LocaleNotifier() : super('en') {
+class LocaleNotifier extends Notifier<String> {
+  @override
+  String build() {
     _initLocale();
+    return 'en';
   }
 
   static const _key = 'app_locale';
@@ -117,7 +149,6 @@ class LocaleNotifier extends StateNotifier<String> {
     if (savedLocale != null) {
       state = savedLocale;
     } else {
-      // Use system locale as default
       final systemLocale = WidgetsBinding.instance.platformDispatcher.locale;
       final languageCode = systemLocale.languageCode.toLowerCase();
       final scriptCode = systemLocale.scriptCode?.toLowerCase();
@@ -143,13 +174,13 @@ class LocaleNotifier extends StateNotifier<String> {
 }
 
 // Theme Mode Provider
-final themeModeProvider = StateNotifierProvider<ThemeNotifier, ThemeMode>((ref) {
-  return ThemeNotifier();
-});
+final themeModeProvider = NotifierProvider<ThemeNotifier, ThemeMode>(ThemeNotifier.new);
 
-class ThemeNotifier extends StateNotifier<ThemeMode> {
-  ThemeNotifier() : super(ThemeMode.dark) {
+class ThemeNotifier extends Notifier<ThemeMode> {
+  @override
+  ThemeMode build() {
     _loadTheme();
+    return ThemeMode.dark;
   }
 
   static const _key = 'app_theme_mode';
@@ -169,7 +200,8 @@ class ThemeNotifier extends StateNotifier<ThemeMode> {
   }
 
   Future<void> toggleTheme() async {
-    final newMode = state == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    final current = state;
+    final newMode = current == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
     await setThemeMode(newMode);
   }
 }

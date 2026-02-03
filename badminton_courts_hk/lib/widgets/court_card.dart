@@ -4,8 +4,6 @@ import '../models/court_session.dart';
 import '../providers/court_provider.dart';
 import '../theme/app_theme.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'dart:io';
-import 'package:flutter/foundation.dart';
 
 class CourtCard extends ConsumerWidget {
   final GroupedCourt court;
@@ -13,25 +11,13 @@ class CourtCard extends ConsumerWidget {
   const CourtCard({super.key, required this.court});
 
   Future<void> _openMap(String venueName, String districtName) async {
-    final query = Uri.encodeComponent('$venueName, $districtName, Hong Kong');
-    String urlString;
-
-    if (kIsWeb) {
-      urlString = 'https://www.google.com/maps/search/?api=1&query=$query';
-    } else if (Platform.isAndroid) {
-      urlString = 'geo:0,0?q=$query'; // Android Native (Google Maps)
-    } else if (Platform.isIOS) {
-      urlString = 'maps://?q=$query'; // iOS Native (Apple Maps)
-    } else {
-      urlString = 'https://www.google.com/maps/search/?api=1&query=$query';
-    }
-
-    final url = Uri.parse(urlString);
-    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-      // Fallback to web if native scheme fails
-      final webUrl = Uri.parse('https://www.google.com/maps/search/?api=1&query=$query');
-      await launchUrl(webUrl, mode: LaunchMode.externalApplication);
-    }
+    final query = Uri.encodeComponent('$venueName');
+    final urlString = 'https://www.google.com/maps/search/?api=1&query=$query';
+    
+    await launchUrl(
+      Uri.parse(urlString), 
+      mode: LaunchMode.externalApplication,
+    );
   }
 
   @override
@@ -69,11 +55,26 @@ class CourtCard extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        court.venueName,
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontSize: 18,
-                        ),
+                      Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 8,
+                        runSpacing: 4,
+                        children: [
+                          Text(
+                            court.venueName,
+                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                              fontSize: 18,
+                            ),
+                          ),
+                          InkWell(
+                            onTap: () => _openMap(court.venueName, court.distName),
+                             borderRadius: BorderRadius.circular(8),
+                            child: Padding(
+                              padding: const EdgeInsets.all(4),
+                              child: Icon(Icons.location_on, color: AppTheme.primaryColor, size: 16),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -88,30 +89,6 @@ class CourtCard extends ConsumerWidget {
                   constraints: const BoxConstraints(),
                 ),
               ],
-            ),
-            const SizedBox(height: 12),
-            InkWell(
-              onTap: () => _openMap(court.venueName, court.distName),
-              borderRadius: BorderRadius.circular(8),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 2),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.location_on, color: AppTheme.primaryColor, size: 14),
-                    const SizedBox(width: 4),
-                    Text(
-                      court.distName, 
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontSize: 13, 
-                        color: AppTheme.primaryColor,
-                        decoration: TextDecoration.underline,
-                        decorationColor: AppTheme.primaryColor.withOpacity(0.3),
-                      )
-                    ),
-                  ],
-                ),
-              ),
             ),
             const SizedBox(height: 16),
             Wrap(

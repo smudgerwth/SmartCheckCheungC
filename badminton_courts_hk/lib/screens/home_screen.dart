@@ -512,14 +512,24 @@ class HomeScreen extends ConsumerWidget {
               const SizedBox(width: 8),
               Row(
                 children: [
-                  Text(AppStrings.get(locale, 'available'), style: TextStyle(color: isLight ? Colors.black38 : Colors.white38, fontSize: 10)),
+                   Text(
+                    AppStrings.get(locale, 'available'), 
+                    style: TextStyle(
+                      color: isLight ? Colors.black38 : Colors.white38, 
+                      fontSize: 10
+                    )
+                  ),
+                  const SizedBox(width: 4),
                   SizedBox(
                     height: 24,
-                    width: 40,
-                    child: Switch(
-                      value: showOnlyAvailable,
-                      onChanged: (value) => ref.read(showOnlyAvailableProvider.notifier).set(value),
-                      activeColor: AppTheme.primaryColor,
+                    width: 48, // Increased width
+                    child: Transform.scale(
+                      scale: 0.7, // Scale down to fit better
+                      child: Switch(
+                        value: showOnlyAvailable,
+                        onChanged: (value) => ref.read(showOnlyAvailableProvider.notifier).set(value),
+                        activeColor: AppTheme.primaryColor,
+                      ),
                     ),
                   ),
                 ],
