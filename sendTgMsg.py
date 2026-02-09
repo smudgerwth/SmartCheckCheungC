@@ -9,6 +9,7 @@ CHAT_ID_BADMINTON_HOLI = '-563254817'
 CHAT_ID_BADMINTON_WEEK = '-562433679'
 CHAT_ID_BASKETBALL = '-1002349404473'
 CHAT_ID_BADMINTON_NTW = '-1001896497593'
+CHAT_ID_TENNIS = '-5255744266'
 CHAT_ID_DEBUG = '166389413'
 
 # https://api.telegram.org/bot{TOKEN}/getUpdates
@@ -36,8 +37,10 @@ def sendTgMsg(msg, chat_id):
 MAX_LENGTH = 4096
 
 
-def send_result(json_data, chat_id):
-    msg = ''
+def send_result(json_data, chat_id, name = ''):
+    if json_data == '':
+        return
+    msg = name + '\n'
     for data in json_data:
         data['venueName'] = data['venueName'].replace('體育館', '')
         day = day_chinese[pd.to_datetime(data['ssnStartDate']).strftime('%A')]

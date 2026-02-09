@@ -1,7 +1,7 @@
 class AppStrings {
   static const Map<String, Map<String, String>> _strings = {
     'en': {
-      'appTitle': 'Badminton Courts HK',
+      'appTitle': 'Sports Courts HK',
       'bookNow': 'Book now',
       'badminton': 'Badminton',
       'basketball': 'Basketball',

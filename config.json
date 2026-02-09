@@ -26,6 +26,32 @@
                     "IS"
                 ]
             }
+        },
+        {
+            "name": "Tennis Court Peak Hours",
+            "code": "TENC",
+            "chatId": "-5255744266",
+            "distList": {
+                "include": [
+                    "KT",
+                    "WTS",
+                    "SK",
+                    "ST"
+                ]
+            }
+        },
+        {
+            "name": "Pickleball Court Peak Hours",
+            "code": "PBC1",
+            "chatId": "-5255744266",
+            "distList": {
+                "include": [
+                    "KT",
+                    "WTS",
+                    "SK",
+                    "ST"
+                ]
+            }
         }
     ],
     "dateKey": "playDate",

@@ -223,7 +223,8 @@ try:
                     with open(diff_json_file, 'w') as f:
                         json.dump(changed_record, f,
                                   ensure_ascii=False, indent=4)
-                    sendTgMsg.send_result(changed_record, chat_id)
+                    if changed_record != []:
+                        sendTgMsg.send_result(changed_record, chat_id, name)
 
                 DBG(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
             sendTgMsg.sendTgMsg('ping', debug_id)

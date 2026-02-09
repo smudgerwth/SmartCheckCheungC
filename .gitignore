@@ -1,10 +1,11 @@
 token
-cookies.json
 data_BADC.json
 data_BASC.json
-data_old_BADC.json
-data_old_BASC.json
+data_PBC1.json
+data_TENC.json
 diff_BADC.json
 diff_BASC.json
+diff_PBC1.json
+diff_TENC.json
 debug.log
 __pycache__
