@@ -7,6 +7,8 @@
         {
             "name": "Badminton Court Peak Hours",
             "code": "BADC",
+            "fileKey": "badc_peak_hours",
+            "peakhour": true,
             "chatId": "-563254817",
             "distList": {
                 "include": [
@@ -15,21 +17,52 @@
                     "SK",
                     "ST"
                 ]
+            },
+            "venueIdList": {}
+        },
+        {
+            "name": "Badminton Court Kowloon Bay Lunch Hours",
+            "code": "BADC",
+            "fileKey": "badc_kowloon_bay_lunch_hours",
+            "peakhour": false,
+            "chatId": "-563254817",
+            "distList": {
+                "include": [
+                    "KT"
+                ]
+            },
+            "venueIdList": {
+                "include": [
+                    284
+                ]
+            },
+            "timeSlotList": {
+                "include": [
+                    {
+                        "start": "12:00:00",
+                        "end": "14:00:00"
+                    }
+                ]
             }
         },
         {
             "name": "Basketball Court Peak Hours",
             "code": "BASC",
+            "fileKey": "basc_peak_hours",
+            "peakhour": true,
             "chatId": "-1002349404473",
             "distList": {
                 "exclude": [
                     "IS"
                 ]
-            }
+            },
+            "venueIdList": {}
         },
         {
             "name": "Tennis Court Peak Hours",
             "code": "TENC",
+            "fileKey": "tenc_peak_hours",
+            "peakhour": true,
             "chatId": "-5255744266",
             "distList": {
                 "include": [
@@ -38,11 +71,14 @@
                     "SK",
                     "ST"
                 ]
-            }
+            },
+            "venueIdList": {}
         },
         {
             "name": "Pickleball Court Peak Hours",
             "code": "PBC1",
+            "fileKey": "pbc1_peak_hours",
+            "peakhour": true,
             "chatId": "-5255744266",
             "distList": {
                 "include": [
@@ -51,7 +87,8 @@
                     "SK",
                     "ST"
                 ]
-            }
+            },
+            "venueIdList": {}
         }
     ],
     "dateKey": "playDate",

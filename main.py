@@ -21,7 +21,7 @@ def add_key_to_json(file_path, name, value, expire_time) -> None:
     data = {}
     data['Cookie'] = f"{name}={value}"
     data['expires'] = expire_time
-    with open(file_path, 'w') as f:
+    with open(file_path, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4)
 
 
@@ -76,7 +76,43 @@ def request_data_json(url, headers):
         return None
 
 
-def parse_response_json(json_data, peak_only=True, dist_list=None):
+def matches_config_filter(value, config_filter):
+    if config_filter is None:
+        return True
+
+    value = str(value)
+    if 'include' in config_filter:
+        return value in {str(item) for item in config_filter['include']}
+    if 'exclude' in config_filter:
+        return value not in {str(item) for item in config_filter['exclude']}
+    return True
+
+
+def make_file_key(facility, facility_index):
+    raw_key = facility.get('fileKey') or f"{facility['code']}_{facility_index}"
+    file_key = re.sub(r'[^A-Za-z0-9_.-]+', '_', str(raw_key)).strip('_.-')
+    return file_key or f"facility_{facility_index}"
+
+
+def time_in_range(value, time_range):
+    value_time = datetime.strptime(value, "%H:%M:%S").time()
+    start_time = datetime.strptime(time_range['start'], "%H:%M:%S").time()
+    end_time = datetime.strptime(time_range['end'], "%H:%M:%S").time()
+    return start_time <= value_time < end_time
+
+
+def matches_time_slot_filter(value, time_slot_list):
+    if time_slot_list is None:
+        return True
+
+    if 'include' in time_slot_list:
+        return any(time_in_range(value, time_range) for time_range in time_slot_list['include'])
+    if 'exclude' in time_slot_list:
+        return not any(time_in_range(value, time_range) for time_range in time_slot_list['exclude'])
+    return True
+
+
+def parse_response_json(json_data, peak_only=False, dist_list=None, venue_id_list=None, time_slot_list=None):
     parsed_json = []
     times_of_day = ['morning', 'afternoon', 'evening']
     for time in times_of_day:
@@ -101,17 +137,16 @@ def parse_response_json(json_data, peak_only=True, dist_list=None):
                         peak_hour = session['peakHour']
                         if datetime.strptime(start_time, "%H:%M:%S").time() <= dt_time(9,0,0):
                             continue
-                        if available is False:
-                            continue
+                        # if available is False:
+                        #     continue
                         if peak_hour is False and peak_only:
                             continue
-                        if dist_list is not None:
-                            if 'include' in dist_list:
-                                if dist_code not in dist_list['include']:
-                                    continue
-                            elif 'exclude' in dist_list:
-                                if dist_code in dist_list['exclude']:
-                                    continue
+                        if not matches_config_filter(dist_code, dist_list):
+                            continue
+                        if not matches_config_filter(venue_id, venue_id_list):
+                            continue
+                        if not matches_time_slot_filter(start_time, time_slot_list):
+                            continue
                         parsed_json.append({
                             'distName': dist_name,
                             'distCode': dist_code,
@@ -150,7 +185,7 @@ debug_id = ""
 try:
     current_time = int(time.time())
     for i in range(3):
-        with open('config.json') as f:
+        with open('config.json', encoding='utf-8') as f:
             config = json.load(f)
             debug_id = config['debugId']
             # try:
@@ -175,10 +210,14 @@ try:
             dateKey = config['dateKey']
             facility_key = config['facilityKey']
             facility_list = config['facilityList']
-            for facility in facility_list:
+            for facility_index, facility in enumerate(facility_list, start=1):
                 chat_id = facility['chatId']
                 code = facility['code']
+                file_key = make_file_key(facility, facility_index)
+                peakhour = facility.get('peakhour', True)
                 dist_list = facility['distList']
+                venue_id_list = facility.get('venueIdList')
+                time_slot_list = facility.get('timeSlotList')
                 name = facility['name']
                 url = f"{baseUrl}{endpoint}?{facility_key}={code}&{dateKey}="
                 DBG(name)
@@ -198,7 +237,10 @@ try:
                 # DBG(play_dates)
                 data_json = []
                 data_json += parse_response_json(today_data_json,
-                                                 dist_list=dist_list)
+                                                 peak_only=peakhour,
+                                                 dist_list=dist_list,
+                                                 venue_id_list=venue_id_list,
+                                                 time_slot_list=time_slot_list)
                 for i, date in enumerate(play_dates):
                     if i == len(play_dates) - 1:
                         continue
@@ -206,22 +248,28 @@ try:
                         continue
                     DBG(date)
                     data_json += parse_response_json(request_data_json(
-                        url+date, headers), dist_list=dist_list)
+                        url+date, headers), peak_only=peakhour,
+                        dist_list=dist_list, venue_id_list=venue_id_list,
+                        time_slot_list=time_slot_list)
 
-                data_json_file = f"data_{code}.json"
-                old_data_json_file = f"data_old_{code}.json"
-                diff_json_file = f"diff_{code}.json"
+                data_json_file = f"data_{file_key}.json"
+                old_data_json_file = f"data_old_{file_key}.json"
+                diff_json_file = f"diff_{file_key}.json"
                 if os.path.exists(data_json_file):
-                    os.rename(data_json_file, old_data_json_file)
+                    os.replace(data_json_file, old_data_json_file)
 
-                with open(data_json_file, 'w') as f:
+                with open(data_json_file, 'w', encoding='utf-8') as f:
                     json.dump(data_json, f, ensure_ascii=False, indent=4)
                     old_json = []
                     if os.path.exists(old_data_json_file):
-                        old_json = json.load(open(old_data_json_file))
+                        try:
+                            with open(old_data_json_file, encoding='utf-8') as old_file:
+                                old_json = json.load(old_file)
+                        except json.JSONDecodeError:
+                            DBG(f"Ignoring invalid old data file: {old_data_json_file}")
                     changed_record = get_changed_records(old_json, data_json)
-                    with open(diff_json_file, 'w') as f:
-                        json.dump(changed_record, f,
+                    with open(diff_json_file, 'w', encoding='utf-8') as diff_file:
+                        json.dump(changed_record, diff_file,
                                   ensure_ascii=False, indent=4)
                     if changed_record != []:
                         sendTgMsg.send_result(changed_record, chat_id, name)
